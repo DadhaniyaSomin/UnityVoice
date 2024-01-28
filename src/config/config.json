@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "somin_@123",
-    "database": "authatication_demo",
+    "database": "unity_voice",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },

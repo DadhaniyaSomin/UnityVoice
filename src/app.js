@@ -13,14 +13,43 @@ const httpStatus = require('http-status');
 const morgan = require('./config/morgan');
 const compression = require('compression');
 const cors = require('cors');
-const helmet = require('helmet')
+const helmet = require('helmet');
+const ApiError = require('./utils/ApiError');
 // const routes = require('./routes/v1');
-require('./config/passport');
+
+// const routes = require('./routes/v1');
+require('./config/passport')(passport);
 
 
 if (config.env !== 'test') {
     app.use(morgan.successHandler);
     app.use(morgan.errorHandler);
+}
+
+let dbOptions;
+
+if (config.env !== 'development') {
+    const productionDatabaseConfig = config.database.production;
+    dbOptions = {
+        connectionLimit: 10,
+        createDatabaseTable: true,
+        host: productionDatabaseConfig.host,
+        port: 3306,
+        user: productionDatabaseConfig.username,
+        password: productionDatabaseConfig.password,
+        database: productionDatabaseConfig.database,
+    };
+} else {
+    const developmentDatabaseConfig = config.database.development;
+    dbOptions = {
+        connectionLimit: 10,
+        createDatabaseTable: true,
+        host: developmentDatabaseConfig.host,
+        port: 3306,
+        user: developmentDatabaseConfig.username,
+        password: developmentDatabaseConfig.password,
+        database: developmentDatabaseConfig.database,
+    };
 }
 
 app.use(helmet());
@@ -36,18 +65,7 @@ app.use(xss());
 app.use(cors());
 app.options('*', cors());
 
-// Determine the environment and load the configuration accordingly
-const environment = process.env.NODE_ENV || 'development';
-const dbconfig = require('./config/config.json')[environment];
 
-// Database connection options
-const dbOptions = {
-    host: dbconfig.host,
-    port: 3306,
-    user: dbconfig.username,
-    password: dbconfig.password,
-    database: dbconfig.database,
-};
 
 // Create a Sequelize instance
 const sequelize = db.sequelize;
@@ -58,15 +76,28 @@ const sessionStore = new MySQLStore(dbOptions);
 // Configure Express to use sessions
 app.use(
     session({
-        key: "testing",
-        secret: '123456789',
+        key: config.session_name,
+        secret: config.session_secret,
         store: sessionStore,
         resave: false,
         saveUninitialized: false,
+        cookie: {
+            // maxAge: config.cookeies_max_age,
+            // sameSite: true,
+            secure: config.env === 'production'
+        }
     })
 );
 
-// Further application setup (passport, routes, etc.) can be added here
+// Optionally use onReady() to get a promise that resolves when store is ready.
+sessionStore.onReady().then(() => {
+	// MySQL session store ready for use.
+	console.log('MySQLStore ready');
+}).catch(error => {
+	// Something went wrong.
+	console.error(error);
+});
+
 
 // Example: Passport configuration
 app.use(passport.initialize());

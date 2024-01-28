@@ -35,14 +35,9 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
-  mongoose: {
-    url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
-    options: {
-      useCreateIndex: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    },
-  },
+  session_secret : process.env.SESS_SECRET,
+  cookeies_max_age : process.env.COOKEIS_MAX_AGE,
+  session_name : process.env.SESS_NAME,
   jwt: {
     secret: envVars.JWT_SECRET,
     accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
@@ -61,4 +56,20 @@ module.exports = {
     },
     from: envVars.EMAIL_FROM,
   },
+  database : {
+      development: {
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.MYSQL_DB,
+        host: process.env.DB_HOST,
+        dialect: "mysql"
+      },
+      production:  {
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.MYSQL_DB,
+        host: process.env.DB_HOST,
+        dialect: "mysql"
+      }
+  }
 };
