@@ -15,7 +15,7 @@ const compression = require('compression');
 const cors = require('cors');
 const helmet = require('helmet');
 const ApiError = require('./utils/ApiError');
-// const routes = require('./routes/v1');
+const routes = require('./routes/v1');
 
 // const routes = require('./routes/v1');
 require('./config/passport')(passport);
@@ -110,7 +110,7 @@ if (config.env === 'production') {
   
 
 // v1 api routes
-// app.use('/v1', routes);
+app.use('/v1', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {

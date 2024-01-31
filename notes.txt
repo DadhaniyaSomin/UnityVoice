@@ -1,3 +1,58 @@
 npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string,Username:string,password:string
 
 
+app.post('/example', (req, res) => {
+  const { body, params, query } = req;
+  // Use body, params, and query directly in your code
+});
+
+
+// Middleware function
+const logRequest = (req, res, next) => {
+  console.log('Received request:', req.method, req.originalUrl);
+  next(); // Pass control to the next middleware or route handler
+};
+
+// Apply middleware globally
+app.use(logRequest);
+
+// Or apply middleware to specific routes
+app.post('/example', logRequest, (req, res) => {
+  // Handle the request
+});
+
+
+
+app.post('/example/:id', (req, res) => {
+  const userId = req.params.id;
+  const requestData = req.body;
+  // Process the data
+});
+
+
+
+const { body, validationResult } = require('express-validator');
+
+app.post(
+  '/example',
+  body('email').isEmail().normalizeEmail(),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Proceed with handling the request
+  }
+);
+
+
+app.post('/example', async (req, res) => {
+  try {
+    const result = await someAsyncFunction();
+    res.json({ result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
