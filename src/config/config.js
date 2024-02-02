@@ -38,6 +38,7 @@ module.exports = {
   session_secret : process.env.SESS_SECRET,
   cookeies_max_age : process.env.COOKEIS_MAX_AGE,
   session_name : process.env.SESS_NAME,
+  salt_length : process.env.SALT_LENGTH,
   jwt: {
     secret: envVars.JWT_SECRET,
     accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,

@@ -1,6 +1,6 @@
-class ApiSuccess {
+class ApiCommonResponse {
     /**
-     * Creates an instance of ApiSuccess.
+     * Creates an instance of ApiCommonResponse.
      *
      * @param {number} statusCode - The HTTP status code for the success response.
      * @param {string} message - The success message.
@@ -13,5 +13,5 @@ class ApiSuccess {
     }
   }
   
-  module.exports = ApiSuccess;
+  module.exports = ApiCommonResponse;
   

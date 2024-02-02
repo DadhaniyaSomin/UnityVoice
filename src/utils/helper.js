@@ -1,6 +1,14 @@
 const httpStatus = require('http-status');
+const bcrypt = require('bcrypt');
 const ApiError = require('../utils/ApiError');
 const db = require('../models/index');
+const catchAsync = require('./catchAsync');
+const config = require('../config/config');
+const path = require('path');
+const fs= require('fs');
+const pathToKey = path.join(__dirname,'..', '..', 'id_rsa_priv.pem');
+const PRIV_KEY = fs.readFileSync(pathToKey, 'utf8');
+const jsonwebtoken = require('jsonwebtoken');
 const { User } = db;
 
 /**
@@ -20,25 +28,54 @@ const isEmailTaken = async (email) => {
 };
 
 /**
- * Handles exceptions and returns an HTTP response with the appropriate status code and error message.
+ * Hashes a password asynchronously using bcrypt.
  *
- * @param {Error} error - The caught error.
- * @param {import('express').Response} res - The Express response object.
+ * @param {string} password - The password to be hashed.
+ * @returns {Promise<string>} - A Promise that resolves to the hashed password.
  */
-const handleHttpException = (error, res) => {
-    console.log(error);
-    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    let errorMessage = 'Internal Server Error';
-
-    if (error instanceof ApiError) {
-        // If it's a known ApiError, use its status code and message
-        statusCode = error.statusCode;
-        errorMessage = error.message;
-    }
-
-    res.status(statusCode).json({ error: errorMessage });
+const hashPassword = async (password) =>  {
+    // Retrieve the salt rounds from the configuration
+    const saltRounds = config.salt_length;
+    console.log("salt round",saltRounds);
+  
+    // Generate the hash asynchronously using bcrypt
+    return bcrypt
+    .genSalt(Number(saltRounds))
+    .then(salt => {
+      console.log('Salt: ', salt)
+      return bcrypt.hash(password, salt)
+    });
 };
 
+/**
+ * Generates a JSON Web Token (JWT) for the given user.
+ *
+ * @param {object} user - The user object for whom the JWT is issued.
+ * @returns {object} - An object containing the generated JWT and its expiration time.
+ */
+function issueJWT(user) {
+    // Extract user ID
+    const userId = user._id;
+  
+    // Set the expiration time for the JWT (1 day)
+    const expiresIn = '1d';
+  
+    // JWT payload
+    const payload = {
+      sub: userId,
+      iat: Date.now(),
+    };
+  
+    // Sign the JWT using RS256 algorithm and private key
+    const signedToken = jsonwebtoken.sign(payload, PRIV_KEY, { expiresIn, algorithm: 'RS256' });
+  
+    // Return the JWT and its expiration time
+    return {
+      token: `Bearer ${signedToken}`,
+      expires: expiresIn,
+    };
+  }
+  
 module.exports = {
-    isEmailTaken,handleHttpException
+    isEmailTaken , hashPassword , issueJWT
 };
